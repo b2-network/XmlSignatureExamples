@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XmlValidateSignature", "XmlValidateSignature\XmlValidateSignature.csproj", "{56CDA5AA-5340-414B-98EF-6182EDA7CACE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XmlSign", "XmlSign\XmlSign.csproj", "{52594133-2A50-491D-8390-C5B5F7827300}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{56CDA5AA-5340-414B-98EF-6182EDA7CACE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{56CDA5AA-5340-414B-98EF-6182EDA7CACE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{56CDA5AA-5340-414B-98EF-6182EDA7CACE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52594133-2A50-491D-8390-C5B5F7827300}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52594133-2A50-491D-8390-C5B5F7827300}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52594133-2A50-491D-8390-C5B5F7827300}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52594133-2A50-491D-8390-C5B5F7827300}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
