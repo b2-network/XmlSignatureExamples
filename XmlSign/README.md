@@ -18,8 +18,3 @@ openssl pkcs12 -export -out mycert.p12 -inkey mycert.key -in mycert.pem
 
 ### makecert
 
-# XmlValidateSignature
-
-Cet outil vérifie une signature. Il est requis contrairement à XmlSign que le certificat utilisé pour la signature ne soit PAS autosigné.
-C'est une contrainte/limitation de https://github.com/egelke/xades/blob/master/XadesLib/XadesVerifier.cs
-
