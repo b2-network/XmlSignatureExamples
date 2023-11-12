@@ -1,0 +1,2 @@
+C:\"Program Files"\OpenSSL-Win64-ARM\bin\openssl req -x509 -sha256 -nodes -days 730 -newkey rsa:2048 -keyout mycert.key -out mycert.pem
+C:\"Program Files"\OpenSSL-Win64-ARM\bin\openssl pkcs12 -export -out mycert.p12 -inkey mycert.key -in mycert.pem

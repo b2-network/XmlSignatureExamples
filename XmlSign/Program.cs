@@ -1,14 +1,15 @@
 ﻿// tool to sign an XML file
 
 
-using System.Reflection;
-using System.Security.Cryptography;
+
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
-using System.Text;
+
 using System.Xml;
 using CommandLine;
 using CommandLine.Text;
+using Egelke.EHealth.Client.Pki;
+using IM.Xades;
 
 namespace XmlSign
 {
@@ -46,7 +47,7 @@ namespace XmlSign
     {
         static int Main(string[] args)
         {
-            Console.WriteLine("XML Signing Tool, (c) B2 Network 2022");
+            Console.WriteLine("XML Signing Tool, (c) B2 Network 2023");
             var result = Parser.Default.ParseArguments<Options>(args);
             var r = result.Value;
             if (r == null)
@@ -85,9 +86,16 @@ namespace XmlSign
             }
 
             var xmlDoc = LoadXml(xmlIn);
-            SignXml(xmlDoc, cert, pass);
-            SaveXml(xmlDoc, xmlOut);
-            Console.WriteLine("Saved XML into {0}/{1}", Directory.GetCurrentDirectory(), xmlOut);
+            xmlDoc.PreserveWhitespace = true;
+           
+            _ = SignXml(xmlDoc, cert, pass);
+            if (null != xmlOut)
+            {
+                SaveXml(xmlDoc, xmlOut);
+                Console.WriteLine("Saved XML into {0}/{1}", Directory.GetCurrentDirectory(), xmlOut);
+            } else {
+                Console.WriteLine("XML Not saved, missing --xmlout option");
+            }
             return 0;
         }
 
@@ -106,38 +114,28 @@ namespace XmlSign
 
         static void SaveXml(XmlDocument xml, string output)
         {
-            var xmlTextWriter = new XmlTextWriter(output, new UTF8Encoding(false));
+            var xmlTextWriter = new XmlTextWriter(output, null);
             xmlTextWriter.Formatting = Formatting.Indented;
             xml.WriteTo(xmlTextWriter);
             xmlTextWriter.Close();
         }
 
+        // see https://www.glennwatson.net/posts/rfc-3161-signing
+       
+        static string stampURI = "http://timestamp.digicert.com/";
+   
         static XmlDocument SignXml(XmlDocument xmlDoc, string certfile, string password)
         {
             var certificate = new X509Certificate2(certfile, password);
-            var signedXml = new SignedXml(xmlDoc);
-            signedXml.SigningKey = certificate.GetRSAPrivateKey();
+           
+            var xades = new XadesCreator(certificate);
 
-            var reference = new Reference
-            {
-                Uri = ""
-            };
+            xades.TimestampProvider = new Rfc3161TimestampProvider(new Uri(stampURI));
+            xades.DataTransforms.Add(new XmlDsigBase64Transform());
 
-            var env = new XmlDsigEnvelopedSignatureTransform();
-            reference.AddTransform(env);
+            var xmlDigitalSignature = xades.CreateXadesT(xmlDoc);
 
-            signedXml.AddReference(reference);
-
-            signedXml.ComputeSignature();
-
-            var xmlDigitalSignature = signedXml.GetXml();
-
-            xmlDoc.DocumentElement.AppendChild(xmlDoc.ImportNode(xmlDigitalSignature, true));
-
-            if (xmlDoc.FirstChild is XmlDeclaration)
-            {
-                xmlDoc.RemoveChild(xmlDoc.FirstChild);
-            }
+            xmlDoc.DocumentElement?.AppendChild(xmlDoc.ImportNode(xmlDigitalSignature, true));
 
             return xmlDoc;
         }

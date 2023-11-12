@@ -9,8 +9,9 @@
 
     <ItemGroup>
       <PackageReference Include="CommandLineParser" Version="2.9.1" />
+      <PackageReference Include="IM.Xades" Version="3.0.0" />
       <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.2" />
-      <PackageReference Include="System.Security.Cryptography.Xml" Version="7.0.0" />
+      <PackageReference Include="System.Security.Cryptography.Xml" Version="7.0.1" />
     </ItemGroup>
 
 </Project>

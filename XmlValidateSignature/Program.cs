@@ -9,6 +9,8 @@ using System.Text;
 using System.Xml;
 using CommandLine;
 using CommandLine.Text;
+using IM.Xades;
+using IM.Xades.Extra;
 
 namespace XmlSign
 {
@@ -20,9 +22,6 @@ namespace XmlSign
         [Option('i', "xml", Required = true, HelpText = "Set XML Input file name.")]
         public string? XmlInput { get; set; }
         
-        [Option('r', "rsa", Required = true, HelpText = "RSA public key.")]
-        public string? Certificate { get; set; }
-        
         [Usage(ApplicationAlias = "signerValidateTool")]
         public static IEnumerable<Example> Examples =>
             new List<Example>()
@@ -30,7 +29,7 @@ namespace XmlSign
                 new Example("validate input XML file",
                     new Options
                     {
-                        XmlInput = "in.xml", Certificate = "cert.pem"
+                        XmlInput = "in.xml"
                     })
             };
     }
@@ -39,7 +38,7 @@ namespace XmlSign
     {
         static int Main(string[] args)
         {
-            Console.WriteLine("XML Validation Tool, (c) B2 Network 2022");
+            Console.WriteLine("XML Validation Tool, (c) B2 Network 2023");
             var result = Parser.Default.ParseArguments<Options>(args);
             var r = result.Value;
             if (r == null)
@@ -48,14 +47,6 @@ namespace XmlSign
             }
 
             var xml = r.XmlInput;
-            var cert = r.Certificate;
-
-            if (!File.Exists(cert))
-            {
-                Console.WriteLine("Public certificate file not found: {0}", cert);
-                Console.WriteLine("Current directory: {0}", Directory.GetCurrentDirectory());
-                return 3;
-            }
             
             if (!File.Exists(xml))
             {
@@ -65,7 +56,7 @@ namespace XmlSign
             }
             
             var xmlDoc = LoadXml(xml);
-            if (VerifyXml(xmlDoc, cert))
+            if (VerifyXml(xmlDoc))
             {
                 Console.WriteLine("XML was successfully verified");
             }
@@ -89,13 +80,9 @@ namespace XmlSign
             return xmlDoc;
         }
         
-        static bool VerifyXml(XmlDocument xmlDoc, string cert)
+        static bool VerifyXml(XmlDocument xmlDoc)
         {
-            var certificate = new X509Certificate2(cert);
-            var key = certificate.GetRSAPublicKey();
-            
-            // create a signedXML and load xml doc
-            var signedXml = new SignedXml(xmlDoc);
+            var verifier = new XadesVerifier();
             
             // Find the "Signature" node
             XmlNodeList nodeList = xmlDoc.GetElementsByTagName("Signature");
@@ -110,8 +97,16 @@ namespace XmlSign
                 throw new CryptographicException("Verification Failed, too many signatures found in document");
             }
             
-            signedXml.LoadXml((XmlElement)nodeList[0]);
-            return signedXml.CheckSignature(key);
+            try
+            {
+                _ = verifier.Verify(xmlDoc, (XmlElement)XadesTools.FindXadesProperties(xmlDoc)[0]);
+            }
+            catch (InvalidXadesException ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw;
+            }
+            return true;
         }
     }
 }
